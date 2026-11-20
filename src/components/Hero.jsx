@@ -32,7 +32,7 @@ export default function Hero({ banners }) {
           {b.productos.map((p) => (
             <Link to={`/p/${p.sku}`} key={p.id} className="hero-prod">
               {p.descuento_pct > 0 && <span className="hero-badge">-{p.descuento_pct}%</span>}
-              <Img producto={p} />
+              <Img producto={p} ancho={200} prioridad />
               <span className="hero-prod-nombre">{p.nombre.split(',')[0]}</span>
               <span className="hero-precio">
                 {p.precio < p.precio_regular && <s>{money(p.precio_regular)}</s>}

@@ -17,7 +17,7 @@ export function TiendaProvider({ children }) {
   const [cliente, setCliente] = useState(null)
   const [email, setEmailState] = useState(() => localStorage.getItem(EMAIL_KEY) || '')
   const [config, setConfig] = useState({ google_client_id: null, codigo_por_correo: false })
-  const [loginAbierto, setLoginAbierto] = useState(false)
+  const [loginAbierto, setLoginAbierto] = useState(false) // false | true | 'registro'
   const [aviso, setAviso] = useState(null)
 
   useEffect(() => { localStorage.setItem(CARRITO_KEY, JSON.stringify(carrito)) }, [carrito])

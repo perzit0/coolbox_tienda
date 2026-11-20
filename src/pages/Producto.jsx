@@ -31,7 +31,7 @@ function LlevalosJuntos({ base, extras }) {
             {i > 0 && <span className="juntos-mas">+</span>}
             <label className={`juntos-item ${sel.has(p.id) ? '' : 'apagado'}`}>
               <input type="checkbox" checked={sel.has(p.id)} onChange={() => toggle(p.id)} disabled={i === 0} />
-              <Img producto={p} />
+              <Img producto={p} ancho={160} />
               <span className="juntos-nombre">{i === 0 ? 'Este producto: ' : ''}{p.nombre}</span>
               <span className="juntos-precio">{money(p.precio)}</span>
             </label>
@@ -73,7 +73,7 @@ export default function Producto() {
       </nav>
       <div className="pdp">
         <div className="pdp-img">
-          <Img producto={p} />
+          <Img producto={p} ancho={600} prioridad />
           {p.descuento_pct > 0 && <span className="pdp-badge">-{p.descuento_pct}%</span>}
         </div>
         <div className="pdp-info">

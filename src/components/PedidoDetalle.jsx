@@ -1,8 +1,30 @@
+import { useState } from 'react'
+import { abrirArchivo } from '../api'
 import Img from './Img'
 import Icon from './Icon'
 import { ESTADOS_PEDIDO, fecha, money } from '../format'
 
+const TIPO_COMPROBANTE = { boleta: 'Boleta electrónica', nota_credito: 'Nota de crédito' }
+
 const PASOS = ['pagado', 'listo', 'entregado']
+
+function Comprobantes({ pedido: p }) {
+  const [error, setError] = useState('')
+  const lista = (p.comprobantes || []).filter((c) => c.numero)
+  if (!lista.length) return null
+  const abrir = (c) => abrirArchivo(`/clientes/me/pedidos/${p.codigo}/comprobante/${c.tipo}/pdf`).catch((e) => setError(e.message))
+  return (
+    <div className="comprobantes">
+      {lista.map((c) => (
+        <div key={c.id} className="comprobante">
+          <Icon name="lock" size={16} /> <span>{TIPO_COMPROBANTE[c.tipo]} <b>{c.numero}</b></span>
+          {c.tiene_pdf && <button type="button" className="link" onClick={() => abrir(c)}>Ver PDF</button>}
+        </div>
+      ))}
+      {error && <div className="alerta alerta-error">{error}</div>}
+    </div>
+  )
+}
 
 export default function PedidoDetalle({ pedido: p }) {
   const idx = p.estado === 'pendiente_pago' ? -1 : PASOS.indexOf(p.estado)
@@ -39,12 +61,13 @@ export default function PedidoDetalle({ pedido: p }) {
           <h4><Icon name="lock" size={18} /> Pago</h4>
           <p>{metodo}{p.nro_operacion && p.metodo_pago !== 'tarjeta' ? ` · Operación ${p.nro_operacion}` : ''}</p>
           <p className="muted">Comprobante enviado a {p.email}</p>
+          <Comprobantes pedido={p} />
         </div>
       </div>
       <ul className="pedido-items">
         {p.detalles?.map((d) => (
           <li key={d.id}>
-            <Img producto={d} className="pedido-img" />
+            <Img producto={d} className="pedido-img" ancho={120} />
             <div><span>{d.nombre}</span><small className="muted">SKU {d.sku} · {d.cantidad} unidad{d.cantidad > 1 ? 'es' : ''}{d.promocion_nombre ? ` · ${d.promocion_nombre}` : ''}</small></div>
             <b>{money(d.subtotal)}</b>
           </li>

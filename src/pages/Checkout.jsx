@@ -45,11 +45,11 @@ function Pasos({ paso }) {
 }
 
 function Perfil({ datos, setDatos, onSiguiente }) {
-  const { email, setEmail, cliente, salir } = useTienda()
+  const { email, salir } = useTienda()
   const navigate = useNavigate()
   const [error, setError] = useState('')
   const set = (k) => (e) => setDatos({ ...datos, [k]: e.target.type === 'checkbox' ? e.target.checked : e.target.value })
-  const noSoyYo = () => { if (cliente) salir(); setEmail(''); navigate('/carrito') }
+  const noSoyYo = () => { salir(); navigate('/carrito') }
   const validar = (e) => {
     e.preventDefault()
     const d = datos
@@ -182,7 +182,7 @@ function Pago({ cot, onPagar, enviando, error }) {
 }
 
 export default function Checkout() {
-  const { carrito, email, cliente, cupon, vaciar } = useTienda()
+  const { carrito, cliente, cupon, vaciar } = useTienda()
   const { cot, error: errCot } = useCarrito()
   const navigate = useNavigate()
   const [paso, setPaso] = useState('perfil')
@@ -207,14 +207,14 @@ export default function Checkout() {
   useEffect(() => { localStorage.setItem(PERFIL_KEY, JSON.stringify(datos)) }, [datos])
 
   if (!carrito.length && !enviando) return <Navigate to="/carrito" replace />
-  if (!email) return <Navigate to="/carrito" replace />
+  if (!cliente) return <Navigate to="/carrito" replace />
 
   const pagar = async (pago) => {
     setEnviando(true); setError('')
     try {
       const r = await api('/tienda/pedidos', {
         method: 'POST',
-        body: { ...datos, email, sede_id: sede.id, cupon: cupon || null, pago, items: carrito.map(({ producto_id, cantidad }) => ({ producto_id, cantidad })) },
+        body: { ...datos, sede_id: sede.id, cupon: cupon || null, pago, items: carrito.map(({ producto_id, cantidad }) => ({ producto_id, cantidad })) },
       })
       vaciar()
       navigate(`/pedido/${r.pedido.codigo}`, { state: { pedido: r.pedido }, replace: true })

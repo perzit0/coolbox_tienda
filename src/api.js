@@ -48,3 +48,23 @@ export function qs(params) {
   const s = q.toString()
   return s ? `?${s}` : ''
 }
+
+/** Abre en otra pestaña un PDF del cliente (la descarga necesita su sesión). */
+export async function abrirArchivo(path) {
+  const ventana = window.open('', '_blank')
+  const t = token.get()
+  try {
+    const res = await fetch(`${API_URL}${path}`, { headers: t ? { Authorization: `Bearer ${t}` } : {} })
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}))
+      throw new ApiError(data.error || 'error', res.status, data.detail || 'El comprobante aún no está disponible.')
+    }
+    const url = URL.createObjectURL(await res.blob())
+    if (ventana) ventana.location.href = url
+    else window.location.href = url
+    setTimeout(() => URL.revokeObjectURL(url), 60000)
+  } catch (e) {
+    ventana?.close()
+    throw e
+  }
+}

@@ -4,21 +4,29 @@ import Img from '../components/Img'
 import Icon from '../components/Icon'
 import Riel from '../components/Riel'
 import Resumen from '../components/Resumen'
-import EmailModal from '../components/EmailModal'
 import { money } from '../format'
 import { useTienda } from '../store'
 import useCarrito from '../useCarrito'
 
+const IR_CHECKOUT = 'tienda_ir_checkout'
+
 export default function Carrito() {
-  const { carrito, cambiarCantidad, quitar, cupon, setCupon, email } = useTienda()
+  const { carrito, cambiarCantidad, quitar, cupon, setCupon, cliente, setLoginAbierto } = useTienda()
   const { cot, error } = useCarrito()
   const [codigo, setCodigo] = useState('')
   const [abrirCupon, setAbrirCupon] = useState(false)
   const [msgCupon, setMsgCupon] = useState('')
-  const [pedirEmail, setPedirEmail] = useState(false)
   const navigate = useNavigate()
 
   useEffect(() => { if (cot?.cupon_error) setMsgCupon(cot.cupon_error) }, [cot])
+
+  // Para comprar se necesita una cuenta: al crearla o ingresar desde aquí, se continúa al checkout.
+  useEffect(() => {
+    if (cliente && sessionStorage.getItem(IR_CHECKOUT)) {
+      sessionStorage.removeItem(IR_CHECKOUT)
+      navigate('/checkout')
+    }
+  }, [cliente, navigate])
 
   if (!carrito.length) {
     return (
@@ -30,7 +38,11 @@ export default function Carrito() {
       </div>
     )
   }
-  const irAComprar = () => (email ? navigate('/checkout') : setPedirEmail(true))
+  const irAComprar = () => {
+    if (cliente) return navigate('/checkout')
+    sessionStorage.setItem(IR_CHECKOUT, '1')
+    setLoginAbierto('registro')
+  }
   const sinStock = cot?.items.some((i) => i.sin_stock)
 
   return (
@@ -43,7 +55,7 @@ export default function Carrito() {
           <ul className="carrito-lista">
             {(cot?.items || []).map((i) => (
               <li key={i.id} className="carrito-item">
-                <Link to={`/p/${i.sku}`}><Img producto={i} className="carrito-img" /></Link>
+                <Link to={`/p/${i.sku}`}><Img producto={i} className="carrito-img" ancho={160} /></Link>
                 <div className="carrito-info">
                   <span className="card-marca">{i.marca}</span>
                   <Link to={`/p/${i.sku}`} className="carrito-nombre">{i.nombre}</Link>
@@ -87,7 +99,6 @@ export default function Carrito() {
         </Resumen>
       </div>
       {cot?.sugerencias?.length > 0 && <Riel titulo="¡Haz tu compra aún mejor!" productos={cot.sugerencias} />}
-      {pedirEmail && <EmailModal onClose={() => setPedirEmail(false)} onListo={() => { setPedirEmail(false); navigate('/checkout') }} />}
     </div>
   )
 }

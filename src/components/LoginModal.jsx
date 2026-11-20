@@ -42,13 +42,17 @@ function BotonGoogle({ clientId, onCredencial }) {
 export default function LoginModal() {
   const { loginAbierto, setLoginAbierto, ingresar, config, email: emailGuardado } = useTienda()
   const [modo, setModo] = useState('ingresar') // ingresar | registro | codigo
+  const paraComprar = loginAbierto === 'registro'
   const [f, setF] = useState({ email: '', password: '', codigo: '', acepta_terminos: false, acepta_promociones: false })
   const [enviado, setEnviado] = useState(false)
   const [error, setError] = useState('')
   const [cargando, setCargando] = useState(false)
 
   useEffect(() => {
-    if (loginAbierto) { setF((x) => ({ ...x, email: emailGuardado || '', password: '', codigo: '' })); setError(''); setEnviado(false) }
+    if (loginAbierto) {
+      setF((x) => ({ ...x, email: emailGuardado || '', password: '', codigo: '' })); setError(''); setEnviado(false)
+      setModo(loginAbierto === 'registro' ? 'registro' : 'ingresar')
+    }
   }, [loginAbierto, emailGuardado])
 
   if (!loginAbierto) return null
@@ -71,6 +75,7 @@ export default function LoginModal() {
 
   return (
     <Modal titulo={modo === 'registro' ? 'Crea tu cuenta' : 'Inicia sesión'} onClose={() => setLoginAbierto(false)}>
+      {paraComprar && <div className="alerta">Para comprar necesitas una cuenta: así tu pedido, tu boleta y el seguimiento quedan guardados. Si ya tienes una, ingresa.</div>}
       <p className="muted">Usa tu correo de Gmail, Outlook, Hotmail, Yahoo o cualquier otro.</p>
       {config.google_client_id && modo !== 'registro' && (
         <>
