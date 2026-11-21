@@ -11,14 +11,27 @@ const PASOS = ['pagado', 'listo', 'entregado']
 function Comprobantes({ pedido: p }) {
   const [error, setError] = useState('')
   const lista = (p.comprobantes || []).filter((c) => c.numero)
-  if (!lista.length) return null
+  // Devoluciones después de la entrega: cada una tiene su nota de crédito
+  const devoluciones = p.devoluciones || []
+  if (!lista.length && !devoluciones.length) return null
   const abrir = (c) => abrirArchivo(`/clientes/me/pedidos/${p.codigo}/comprobante/${c.tipo}/pdf`).catch((e) => setError(e.message))
+  const abrirNota = (d) => abrirArchivo(`/clientes/me/pedidos/${p.codigo}/devoluciones/${d.id}/pdf`).catch((e) => setError(e.message))
   return (
     <div className="comprobantes">
       {lista.map((c) => (
         <div key={c.id} className="comprobante">
           <Icon name="lock" size={16} /> <span>{TIPO_COMPROBANTE[c.tipo]} <b>{c.numero}</b></span>
           {c.tiene_pdf && <button type="button" className="link" onClick={() => abrir(c)}>Ver PDF</button>}
+        </div>
+      ))}
+      {devoluciones.map((d) => (
+        <div key={`d${d.id}`} className="comprobante">
+          <Icon name="lock" size={16} />
+          <span>
+            Devolución {d.codigo}: {money(d.total)}
+            {d.nota_credito ? <> · Nota de crédito <b>{d.nota_credito}</b></> : ' · nota de crédito en proceso'}
+          </span>
+          {d.tiene_pdf && <button type="button" className="link" onClick={() => abrirNota(d)}>Ver PDF</button>}
         </div>
       ))}
       {error && <div className="alerta alerta-error">{error}</div>}
